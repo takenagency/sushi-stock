@@ -33,6 +33,7 @@ export function ProductoCard({
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
 
   const valorEnStock = producto.precio * producto.cantidad;
+  const sinStock = producto.cantidad === 0;
 
   function abrirEdicionNombre() {
     setNombreInput(producto.nombre);
@@ -109,7 +110,13 @@ export function ProductoCard({
   }
 
   return (
-    <li className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <li
+      className={`rounded-2xl border p-4 shadow-sm ${
+        sinStock
+          ? "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950"
+          : "border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         {editandoNombre ? (
           <input
