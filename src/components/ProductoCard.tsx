@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { Producto } from "@/lib/types";
 
 function formatearPrecio(precio: number) {
@@ -11,36 +10,24 @@ function formatearPrecio(precio: number) {
   });
 }
 
-export function ProductoCard({ producto }: { producto: Producto }) {
-  const [busy, setBusy] = useState(false);
+interface ProductoCardProps {
+  producto: Producto;
+  onActualizar: (
+    id: string,
+    cambios: Partial<Pick<Producto, "cantidad" | "precio">>
+  ) => void;
+}
+
+export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
   const [editandoCantidad, setEditandoCantidad] = useState(false);
   const [cantidadInput, setCantidadInput] = useState(String(producto.cantidad));
   const [editandoPrecio, setEditandoPrecio] = useState(false);
   const [precioInput, setPrecioInput] = useState(String(producto.precio));
 
-  async function guardarCantidad(nuevaCantidad: number) {
-    if (Number.isNaN(nuevaCantidad) || nuevaCantidad < 0) return;
-    setBusy(true);
-    await supabase
-      .from("productos")
-      .update({ cantidad: nuevaCantidad, updated_at: new Date().toISOString() })
-      .eq("id", producto.id);
-    setBusy(false);
-  }
-
-  async function guardarPrecio(nuevoPrecio: number) {
-    if (Number.isNaN(nuevoPrecio) || nuevoPrecio < 0) return;
-    setBusy(true);
-    await supabase
-      .from("productos")
-      .update({ precio: nuevoPrecio, updated_at: new Date().toISOString() })
-      .eq("id", producto.id);
-    setBusy(false);
-  }
-
   function ajustar(delta: number) {
-    if (busy) return;
-    guardarCantidad(producto.cantidad + delta);
+    const nuevaCantidad = producto.cantidad + delta;
+    if (nuevaCantidad < 0) return;
+    onActualizar(producto.id, { cantidad: nuevaCantidad });
   }
 
   function abrirEdicionCantidad() {
@@ -51,8 +38,8 @@ export function ProductoCard({ producto }: { producto: Producto }) {
   function confirmarCantidad() {
     setEditandoCantidad(false);
     const valor = parseFloat(cantidadInput.replace(",", "."));
-    if (!Number.isNaN(valor) && valor !== producto.cantidad) {
-      guardarCantidad(valor);
+    if (!Number.isNaN(valor) && valor >= 0 && valor !== producto.cantidad) {
+      onActualizar(producto.id, { cantidad: valor });
     }
   }
 
@@ -64,8 +51,8 @@ export function ProductoCard({ producto }: { producto: Producto }) {
   function confirmarPrecio() {
     setEditandoPrecio(false);
     const valor = parseFloat(precioInput.replace(",", "."));
-    if (!Number.isNaN(valor) && valor !== producto.precio) {
-      guardarPrecio(valor);
+    if (!Number.isNaN(valor) && valor >= 0 && valor !== producto.precio) {
+      onActualizar(producto.id, { precio: valor });
     }
   }
 
@@ -102,9 +89,8 @@ export function ProductoCard({ producto }: { producto: Producto }) {
           <button
             type="button"
             aria-label="Restar"
-            disabled={busy}
             onClick={() => ajustar(-1)}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-2xl font-bold text-neutral-700 active:bg-neutral-200 disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-200 dark:active:bg-neutral-700"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-2xl font-bold text-neutral-700 active:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:active:bg-neutral-700"
           >
             −
           </button>
@@ -134,9 +120,8 @@ export function ProductoCard({ producto }: { producto: Producto }) {
           <button
             type="button"
             aria-label="Sumar"
-            disabled={busy}
             onClick={() => ajustar(1)}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-2xl font-bold text-neutral-700 active:bg-neutral-200 disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-200 dark:active:bg-neutral-700"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-2xl font-bold text-neutral-700 active:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:active:bg-neutral-700"
           >
             +
           </button>

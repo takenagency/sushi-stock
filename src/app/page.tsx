@@ -4,7 +4,7 @@ import { useProductos } from "@/hooks/useProductos";
 import { ProductoCard } from "@/components/ProductoCard";
 
 export default function Home() {
-  const { productos, loading, error } = useProductos();
+  const { productos, loading, error, actualizarProducto } = useProductos();
 
   return (
     <div className="min-h-full flex-1 bg-neutral-50 dark:bg-neutral-950">
@@ -44,7 +44,11 @@ export default function Home() {
         {!loading && !error && productos.length > 0 && (
           <ul className="flex flex-col gap-3">
             {productos.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
+              <ProductoCard
+                key={producto.id}
+                producto={producto}
+                onActualizar={actualizarProducto}
+              />
             ))}
           </ul>
         )}

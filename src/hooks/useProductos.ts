@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Producto } from "@/lib/types";
 
@@ -69,5 +69,32 @@ export function useProductos() {
     };
   }, []);
 
-  return { productos, loading, error };
+  const actualizarProducto = useCallback(
+    async (id: string, cambios: Partial<Pick<Producto, "cantidad" | "precio">>) => {
+      let anterior: Producto | undefined;
+
+      setProductos((current) =>
+        current.map((p) => {
+          if (p.id !== id) return p;
+          anterior = p;
+          return { ...p, ...cambios };
+        })
+      );
+
+      const { error } = await supabase
+        .from("productos")
+        .update({ ...cambios, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error && anterior) {
+        const valorAnterior = anterior;
+        setProductos((current) =>
+          current.map((p) => (p.id === id ? valorAnterior : p))
+        );
+      }
+    },
+    []
+  );
+
+  return { productos, loading, error, actualizarProducto };
 }
