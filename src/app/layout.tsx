@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sushi Stock",
+  title: "Bonifacio",
   description: "Control de stock para el local de sushi",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Sushi Stock",
+    title: "Bonifacio",
   },
   icons: {
     icon: [

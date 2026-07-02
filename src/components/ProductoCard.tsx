@@ -16,15 +16,23 @@ interface ProductoCardProps {
     id: string,
     cambios: Partial<Pick<Producto, "nombre" | "cantidad" | "precio">>
   ) => void;
+  onEliminar: (id: string) => void;
 }
 
-export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
+export function ProductoCard({
+  producto,
+  onActualizar,
+  onEliminar,
+}: ProductoCardProps) {
   const [editandoNombre, setEditandoNombre] = useState(false);
   const [nombreInput, setNombreInput] = useState(producto.nombre);
   const [editandoCantidad, setEditandoCantidad] = useState(false);
   const [cantidadInput, setCantidadInput] = useState(String(producto.cantidad));
   const [editandoPrecio, setEditandoPrecio] = useState(false);
   const [precioInput, setPrecioInput] = useState(String(producto.precio));
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
+
+  const valorEnStock = producto.precio * producto.cantidad;
 
   function abrirEdicionNombre() {
     setNombreInput(producto.nombre);
@@ -71,29 +79,86 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
     }
   }
 
+  if (confirmandoEliminar) {
+    return (
+      <li className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900 dark:bg-red-950">
+        <p className="text-base font-semibold text-red-900 dark:text-red-100">
+          ¿Eliminar &ldquo;{producto.nombre}&rdquo;?
+        </p>
+        <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+          Esta acción no se puede deshacer.
+        </p>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmandoEliminar(false)}
+            className="flex-1 rounded-xl bg-white py-3 text-base font-semibold text-neutral-700 active:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => onEliminar(producto.id)}
+            className="flex-1 rounded-xl bg-red-600 py-3 text-base font-semibold text-white active:bg-red-700"
+          >
+            Eliminar
+          </button>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <li className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      {editandoNombre ? (
-        <input
-          autoFocus
-          value={nombreInput}
-          onChange={(e) => setNombreInput(e.target.value)}
-          onFocus={(e) => e.currentTarget.select()}
-          onBlur={confirmarNombre}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
-          className="w-full rounded-lg border border-neutral-300 px-2 py-1 text-lg font-semibold dark:border-neutral-700 dark:bg-neutral-800"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={abrirEdicionNombre}
-          className="-mx-1 block w-full rounded-lg px-1 text-left text-lg font-semibold leading-snug text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
-        >
-          {producto.nombre}
-        </button>
-      )}
+      <div className="flex items-start justify-between gap-2">
+        {editandoNombre ? (
+          <input
+            autoFocus
+            value={nombreInput}
+            onChange={(e) => setNombreInput(e.target.value)}
+            onFocus={(e) => e.currentTarget.select()}
+            onBlur={confirmarNombre}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+            }}
+            className="w-full rounded-lg border border-neutral-300 px-2 py-1 text-lg font-semibold dark:border-neutral-700 dark:bg-neutral-800"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={abrirEdicionNombre}
+            className="-mx-1 min-w-0 flex-1 rounded-lg px-1 text-left text-lg font-semibold leading-snug text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
+          >
+            {producto.nombre}
+          </button>
+        )}
+
+        {!editandoNombre && (
+          <button
+            type="button"
+            aria-label="Eliminar producto"
+            onClick={() => setConfirmandoEliminar(true)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 active:bg-red-50 active:text-red-600 dark:active:bg-red-950 dark:active:text-red-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5"
+            >
+              <path d="M3 6h18" />
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       <div className="mt-2 flex items-center justify-between gap-3">
         {editandoPrecio ? (
@@ -115,7 +180,7 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
             onClick={abrirEdicionPrecio}
             className="rounded-lg px-1 -mx-1 text-base text-neutral-500 tabular-nums active:bg-neutral-100 dark:text-neutral-400 dark:active:bg-neutral-800"
           >
-            ${formatearPrecio(producto.precio)}
+            ${formatearPrecio(producto.precio)} <span className="text-neutral-400 dark:text-neutral-500">/u</span>
           </button>
         )}
 
@@ -161,6 +226,15 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
             +
           </button>
         </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-2 text-sm dark:border-neutral-800">
+        <span className="text-neutral-500 dark:text-neutral-400">
+          Valor en stock
+        </span>
+        <span className="font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
+          ${formatearPrecio(valorEnStock)}
+        </span>
       </div>
     </li>
   );

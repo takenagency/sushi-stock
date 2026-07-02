@@ -101,5 +101,59 @@ export function useProductos() {
     []
   );
 
-  return { productos, loading, error, actualizarProducto };
+  const crearProducto = useCallback(
+    async (datos: Pick<Producto, "nombre" | "cantidad" | "precio">) => {
+      const nuevo: Producto = {
+        id: crypto.randomUUID(),
+        nombre: datos.nombre,
+        cantidad: datos.cantidad,
+        precio: datos.precio,
+        updated_at: new Date().toISOString(),
+      };
+
+      setProductos((current) =>
+        [...current, nuevo].sort((a, b) => a.nombre.localeCompare(b.nombre))
+      );
+
+      const { error } = await supabase.from("productos").insert(nuevo);
+
+      if (error) {
+        setProductos((current) => current.filter((p) => p.id !== nuevo.id));
+      }
+
+      return error;
+    },
+    []
+  );
+
+  const eliminarProducto = useCallback(async (id: string) => {
+    let anterior: Producto | undefined;
+
+    setProductos((current) => {
+      anterior = current.find((p) => p.id === id);
+      return current.filter((p) => p.id !== id);
+    });
+
+    const { error } = await supabase.from("productos").delete().eq("id", id);
+
+    if (error && anterior) {
+      const valorAnterior = anterior;
+      setProductos((current) =>
+        [...current, valorAnterior].sort((a, b) =>
+          a.nombre.localeCompare(b.nombre)
+        )
+      );
+    }
+
+    return error;
+  }, []);
+
+  return {
+    productos,
+    loading,
+    error,
+    actualizarProducto,
+    crearProducto,
+    eliminarProducto,
+  };
 }

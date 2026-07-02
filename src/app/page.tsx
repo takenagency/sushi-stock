@@ -2,23 +2,19 @@
 
 import { useProductos } from "@/hooks/useProductos";
 import { ProductoCard } from "@/components/ProductoCard";
+import { NuevoProductoForm } from "@/components/NuevoProductoForm";
 
 export default function Home() {
-  const { productos, loading, error, actualizarProducto } = useProductos();
+  const { productos, loading, error, actualizarProducto, crearProducto, eliminarProducto } =
+    useProductos();
 
   return (
     <div className="min-h-full flex-1 bg-neutral-50 dark:bg-neutral-950">
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 px-4 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
-        <div className="mx-auto flex max-w-md items-center justify-between">
-          <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-            🍣 Sushi Stock
+        <div className="mx-auto max-w-md">
+          <h1 className="text-center text-xl font-bold text-neutral-900 dark:text-neutral-100">
+            🍣 Bonifacio
           </h1>
-          {!error && (
-            <span className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-              <span className="h-2 w-2 rounded-full bg-green-500" />
-              En vivo
-            </span>
-          )}
         </div>
       </header>
 
@@ -48,9 +44,16 @@ export default function Home() {
                 key={producto.id}
                 producto={producto}
                 onActualizar={actualizarProducto}
+                onEliminar={eliminarProducto}
               />
             ))}
           </ul>
+        )}
+
+        {!loading && !error && (
+          <div className="mt-3">
+            <NuevoProductoForm onCrear={crearProducto} />
+          </div>
         )}
       </main>
     </div>
