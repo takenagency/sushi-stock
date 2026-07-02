@@ -47,9 +47,9 @@ export function useProductos() {
 
             if (payload.eventType === "UPDATE") {
               const actualizado = payload.new as Producto;
-              return current.map((p) =>
-                p.id === actualizado.id ? actualizado : p
-              );
+              return current
+                .map((p) => (p.id === actualizado.id ? actualizado : p))
+                .sort((a, b) => a.nombre.localeCompare(b.nombre));
             }
 
             if (payload.eventType === "DELETE") {
@@ -70,15 +70,20 @@ export function useProductos() {
   }, []);
 
   const actualizarProducto = useCallback(
-    async (id: string, cambios: Partial<Pick<Producto, "cantidad" | "precio">>) => {
+    async (
+      id: string,
+      cambios: Partial<Pick<Producto, "nombre" | "cantidad" | "precio">>
+    ) => {
       let anterior: Producto | undefined;
 
       setProductos((current) =>
-        current.map((p) => {
-          if (p.id !== id) return p;
-          anterior = p;
-          return { ...p, ...cambios };
-        })
+        current
+          .map((p) => {
+            if (p.id !== id) return p;
+            anterior = p;
+            return { ...p, ...cambios };
+          })
+          .sort((a, b) => a.nombre.localeCompare(b.nombre))
       );
 
       const { error } = await supabase

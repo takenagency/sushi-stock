@@ -14,15 +14,30 @@ interface ProductoCardProps {
   producto: Producto;
   onActualizar: (
     id: string,
-    cambios: Partial<Pick<Producto, "cantidad" | "precio">>
+    cambios: Partial<Pick<Producto, "nombre" | "cantidad" | "precio">>
   ) => void;
 }
 
 export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [nombreInput, setNombreInput] = useState(producto.nombre);
   const [editandoCantidad, setEditandoCantidad] = useState(false);
   const [cantidadInput, setCantidadInput] = useState(String(producto.cantidad));
   const [editandoPrecio, setEditandoPrecio] = useState(false);
   const [precioInput, setPrecioInput] = useState(String(producto.precio));
+
+  function abrirEdicionNombre() {
+    setNombreInput(producto.nombre);
+    setEditandoNombre(true);
+  }
+
+  function confirmarNombre() {
+    setEditandoNombre(false);
+    const valor = nombreInput.trim();
+    if (valor && valor !== producto.nombre) {
+      onActualizar(producto.id, { nombre: valor });
+    }
+  }
 
   function ajustar(delta: number) {
     const nuevaCantidad = producto.cantidad + delta;
@@ -58,9 +73,27 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
 
   return (
     <li className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <p className="text-lg font-semibold leading-snug text-neutral-900 dark:text-neutral-100">
-        {producto.nombre}
-      </p>
+      {editandoNombre ? (
+        <input
+          autoFocus
+          value={nombreInput}
+          onChange={(e) => setNombreInput(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={confirmarNombre}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+          className="w-full rounded-lg border border-neutral-300 px-2 py-1 text-lg font-semibold dark:border-neutral-700 dark:bg-neutral-800"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={abrirEdicionNombre}
+          className="-mx-1 block w-full rounded-lg px-1 text-left text-lg font-semibold leading-snug text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
+        >
+          {producto.nombre}
+        </button>
+      )}
 
       <div className="mt-2 flex items-center justify-between gap-3">
         {editandoPrecio ? (
@@ -69,6 +102,7 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
             inputMode="decimal"
             value={precioInput}
             onChange={(e) => setPrecioInput(e.target.value)}
+            onFocus={(e) => e.currentTarget.select()}
             onBlur={confirmarPrecio}
             onKeyDown={(e) => {
               if (e.key === "Enter") e.currentTarget.blur();
@@ -101,17 +135,18 @@ export function ProductoCard({ producto, onActualizar }: ProductoCardProps) {
               inputMode="decimal"
               value={cantidadInput}
               onChange={(e) => setCantidadInput(e.target.value)}
+              onFocus={(e) => e.currentTarget.select()}
               onBlur={confirmarCantidad}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.currentTarget.blur();
               }}
-              className="w-16 rounded-lg border border-neutral-300 px-1 py-2 text-center text-xl font-bold tabular-nums dark:border-neutral-700 dark:bg-neutral-800"
+              className="w-20 rounded-lg border border-neutral-300 px-1 py-2 text-center text-xl font-bold tabular-nums dark:border-neutral-700 dark:bg-neutral-800"
             />
           ) : (
             <button
               type="button"
               onClick={abrirEdicionCantidad}
-              className="w-16 rounded-lg py-2 text-center text-xl font-bold tabular-nums text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
+              className="w-20 rounded-lg py-2 text-center text-xl font-bold tabular-nums text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
             >
               {producto.cantidad}
             </button>
