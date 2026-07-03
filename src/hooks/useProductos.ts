@@ -7,7 +7,24 @@ import type { Producto } from "@/lib/types";
 export function useProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const refrescar = useCallback(async () => {
+    setRefrescando(true);
+    const { data, error } = await supabase
+      .from("productos")
+      .select("*")
+      .order("nombre", { ascending: true });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setError(null);
+      setProductos(data ?? []);
+    }
+    setRefrescando(false);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -151,9 +168,11 @@ export function useProductos() {
   return {
     productos,
     loading,
+    refrescando,
     error,
     actualizarProducto,
     crearProducto,
     eliminarProducto,
+    refrescar,
   };
 }
