@@ -55,7 +55,7 @@ export function NuevoCalculadoraProductoForm({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-300 py-4 text-base font-semibold text-neutral-500 active:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:active:bg-neutral-900"
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-neutral-300 py-1.5 text-xs font-semibold text-neutral-500 active:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:active:bg-neutral-900"
       >
         + Agregar producto
       </button>

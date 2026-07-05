@@ -112,6 +112,42 @@ export function useTransacciones() {
     []
   );
 
+  const actualizarTransaccion = useCallback(
+    async (
+      id: string,
+      cambios: Partial<
+        Pick<Transaccion, "tipo" | "nombre" | "monto" | "categoria" | "fecha">
+      >
+    ) => {
+      let anterior: Transaccion | undefined;
+
+      setTransacciones((current) =>
+        ordenar(
+          current.map((t) => {
+            if (t.id !== id) return t;
+            anterior = t;
+            return { ...t, ...cambios };
+          })
+        )
+      );
+
+      const { error } = await supabase
+        .from("transacciones")
+        .update(cambios)
+        .eq("id", id);
+
+      if (error && anterior) {
+        const valorAnterior = anterior;
+        setTransacciones((current) =>
+          ordenar(current.map((t) => (t.id === id ? valorAnterior : t)))
+        );
+      }
+
+      return error;
+    },
+    []
+  );
+
   const eliminarTransaccion = useCallback(async (id: string) => {
     let anterior: Transaccion | undefined;
 
@@ -154,6 +190,7 @@ export function useTransacciones() {
     saldo,
     categorias,
     crearTransaccion,
+    actualizarTransaccion,
     eliminarTransaccion,
     refrescar,
   };

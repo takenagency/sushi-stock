@@ -7,12 +7,33 @@ import { NuevaTransaccionForm } from "@/components/NuevaTransaccionForm";
 import { FiltrosCaja, FILTROS_VACIOS, type FiltrosCajaState } from "@/components/FiltrosCaja";
 import { useTransacciones } from "@/hooks/useTransacciones";
 import { formatearMoneda } from "@/lib/formato";
+import type { Transaccion } from "@/lib/types";
 
 export default function CajaPage() {
-  const { transacciones, loading, error, saldo, categorias, crearTransaccion } =
-    useTransacciones();
+  const {
+    transacciones,
+    loading,
+    error,
+    saldo,
+    categorias,
+    crearTransaccion,
+    actualizarTransaccion,
+    eliminarTransaccion,
+  } = useTransacciones();
   const [filtros, setFiltros] = useState<FiltrosCajaState>(FILTROS_VACIOS);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [transaccionEditando, setTransaccionEditando] =
+    useState<Transaccion | null>(null);
+
+  function abrirNueva() {
+    setTransaccionEditando(null);
+    setFormularioAbierto(true);
+  }
+
+  function abrirEdicion(transaccion: Transaccion) {
+    setTransaccionEditando(transaccion);
+    setFormularioAbierto(true);
+  }
 
   const transaccionesFiltradas = useMemo(() => {
     return transacciones.filter((t) => {
@@ -79,7 +100,11 @@ export default function CajaPage() {
             ) : (
               <ul>
                 {transaccionesFiltradas.map((transaccion) => (
-                  <TransaccionRow key={transaccion.id} transaccion={transaccion} />
+                  <TransaccionRow
+                    key={transaccion.id}
+                    transaccion={transaccion}
+                    onClick={abrirEdicion}
+                  />
                 ))}
               </ul>
             )}
@@ -90,7 +115,7 @@ export default function CajaPage() {
       <button
         type="button"
         aria-label="Nueva transacción"
-        onClick={() => setFormularioAbierto(true)}
+        onClick={abrirNueva}
         className="fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-900 text-3xl font-light text-white shadow-lg active:bg-neutral-700 dark:bg-white dark:text-neutral-900"
       >
         +
@@ -99,8 +124,11 @@ export default function CajaPage() {
       <NuevaTransaccionForm
         abierto={formularioAbierto}
         categorias={categorias}
+        transaccion={transaccionEditando}
         onCerrar={() => setFormularioAbierto(false)}
         onCrear={crearTransaccion}
+        onActualizar={actualizarTransaccion}
+        onEliminar={eliminarTransaccion}
       />
     </div>
   );
