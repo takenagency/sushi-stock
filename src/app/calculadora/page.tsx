@@ -87,7 +87,7 @@ export default function CalculadoraPage() {
 
         {!loading && !error && (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-neutral-200 bg-white px-2 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="max-h-full overflow-y-auto rounded-xl border border-neutral-200 bg-white px-2 dark:border-neutral-800 dark:bg-neutral-900">
               {productos.length === 0 ? (
                 <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">
                   Todavía no hay productos cargados.

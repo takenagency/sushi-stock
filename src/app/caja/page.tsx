@@ -35,6 +35,12 @@ export default function CajaPage() {
     setFormularioAbierto(true);
   }
 
+  const hayFiltrosActivos =
+    filtros.tipo !== "todos" ||
+    filtros.categoria !== "" ||
+    filtros.desde !== "" ||
+    filtros.hasta !== "";
+
   const transaccionesFiltradas = useMemo(() => {
     return transacciones.filter((t) => {
       if (filtros.tipo !== "todos" && t.tipo !== filtros.tipo) return false;
@@ -44,6 +50,16 @@ export default function CajaPage() {
       return true;
     });
   }, [transacciones, filtros]);
+
+  const resumenFiltrado = useMemo(() => {
+    const ingresos = transaccionesFiltradas
+      .filter((t) => t.tipo === "ingreso")
+      .reduce((acc, t) => acc + t.monto, 0);
+    const egresos = transaccionesFiltradas
+      .filter((t) => t.tipo === "egreso")
+      .reduce((acc, t) => acc + t.monto, 0);
+    return { ingresos, egresos, neto: ingresos - egresos };
+  }, [transaccionesFiltradas]);
 
   return (
     <div className="min-h-full flex-1 bg-neutral-50 dark:bg-neutral-950">
@@ -78,6 +94,43 @@ export default function CajaPage() {
             categorias={categorias}
           />
         </div>
+
+        {hayFiltrosActivos && !loading && !error && (
+          <div className="mt-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-500 dark:text-neutral-400">
+                Resultado filtrado ({transaccionesFiltradas.length})
+              </span>
+              <span
+                className={`font-bold tabular-nums ${
+                  resumenFiltrado.neto > 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : resumenFiltrado.neto < 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-neutral-900 dark:text-neutral-100"
+                }`}
+              >
+                $ {formatearMoneda(resumenFiltrado.neto)}
+              </span>
+            </div>
+            {resumenFiltrado.ingresos > 0 && resumenFiltrado.egresos > 0 && (
+              <div className="mt-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                <span>
+                  Ingresos{" "}
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    $ {formatearMoneda(resumenFiltrado.ingresos)}
+                  </span>
+                </span>
+                <span>
+                  Egresos{" "}
+                  <span className="text-red-600 dark:text-red-400">
+                    $ {formatearMoneda(resumenFiltrado.egresos)}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {loading && (
           <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">
