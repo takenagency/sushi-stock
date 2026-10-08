@@ -49,10 +49,19 @@ export default function CalculadoraPage() {
 
   function confirmarSaldo() {
     setEditandoSaldo(false);
-    const valor = parseFloat(saldoInput.replace(",", "."));
+    const texto = saldoInput.trim();
+    // Campo vacío (o solo el signo) equivale a borrar el saldo
+    const valor =
+      texto === "" || texto === "-" ? 0 : parseFloat(texto.replace(",", "."));
     if (!Number.isNaN(valor) && valor !== saldoActual) {
       actualizarSaldo(valor);
     }
+  }
+
+  function alternarSignoSaldo() {
+    setSaldoInput((actual) =>
+      actual.startsWith("-") ? actual.slice(1) : `-${actual}`
+    );
   }
 
   return (
@@ -127,25 +136,42 @@ export default function CalculadoraPage() {
                   Saldo
                 </span>
                 {editandoSaldo ? (
-                  <input
-                    autoFocus
-                    inputMode="decimal"
-                    value={saldoInput}
-                    onChange={(e) => setSaldoInput(e.target.value)}
-                    onFocus={(e) => e.currentTarget.select()}
-                    onBlur={confirmarSaldo}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") e.currentTarget.blur();
-                    }}
-                    className="w-24 rounded border border-neutral-300 px-1.5 py-0.5 text-right text-sm tabular-nums dark:border-neutral-700 dark:bg-neutral-800"
-                  />
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label="Cambiar signo"
+                      // Evita que el input pierda el foco (y se confirme) al tocar el botón
+                      onPointerDown={(e) => e.preventDefault()}
+                      onClick={alternarSignoSaldo}
+                      className="rounded bg-neutral-100 px-2 py-0.5 text-sm font-bold text-neutral-700 active:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200"
+                    >
+                      ±
+                    </button>
+                    <input
+                      autoFocus
+                      inputMode="decimal"
+                      value={saldoInput}
+                      onChange={(e) => setSaldoInput(e.target.value)}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onBlur={confirmarSaldo}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
+                      className="w-24 rounded border border-neutral-300 px-1.5 py-0.5 text-right text-sm tabular-nums dark:border-neutral-700 dark:bg-neutral-800"
+                    />
+                  </div>
                 ) : (
                   <button
                     type="button"
                     onClick={abrirEdicionSaldo}
-                    className="rounded px-1 -mx-1 font-bold tabular-nums text-neutral-900 active:bg-neutral-100 dark:text-neutral-100 dark:active:bg-neutral-800"
+                    className={`rounded px-1 -mx-1 font-bold tabular-nums active:bg-neutral-100 dark:active:bg-neutral-800 ${
+                      saldoActual < 0
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-neutral-900 dark:text-neutral-100"
+                    }`}
                   >
-                    ${formatearMoneda(saldoActual, 0)}
+                    {saldoActual < 0 ? "-" : ""}$
+                    {formatearMoneda(Math.abs(saldoActual), 0)}
                   </button>
                 )}
               </div>
